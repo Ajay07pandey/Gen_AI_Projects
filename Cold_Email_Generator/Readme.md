@@ -8,61 +8,66 @@ A **Cold Email Generator** app built with **Streamlit**, **LangChain**, **ChatGr
 * **Portfolio Skill Matching**: Match job requirements with a student portfolio dataset using Chroma DB.
 * **Cold Email Generation**: Automatically generate cold emails for job applicants, referencing relevant portfolio links.
 
-## Technologies
+Here's an explanation of the files in your **Cold Email Generator** project:
 
-* **Streamlit**: Used for the web interface.
-* **LangChain**: A framework for working with language models and document processing.
-* **ChatGroq LLM**: For extracting job details and generating emails.
-* **Chroma DB**: A vector database for querying student portfolios.
-* **Python**: The core language for implementing the app.
-* **dotenv**: Used to manage environment variables for API keys.
+### 1. **`chains.py`**
 
-## Installation
+* This file defines the **Chain** class, which manages job extraction and cold email generation using the **ChatGroq** API.
 
-1. **Clone the repository**:
+* **Main Features**:
 
-   ```bash
-   git clone https://huggingface.co/spaces/Ajay07pandey/Cold_Email_generator
-   ```
+  * **`extract_jobs`**: This method takes in cleaned job posting text and uses a template to instruct the model to extract key job details such as `role`, `experience`, `skills`, and `description`. The result is returned as a JSON object.
+  * **`write_mail`**: This method generates a cold email based on a job description and matching portfolio links. The prompt instructs the model to create a professional and persuasive email.
 
-2. **Install dependencies**:
+* **ChatGroq** is used for generating responses, and prompts are carefully structured using **PromptTemplate** from LangChain.
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+* **Environment variable**: The Groq API key (`GROQ_API_KEY`) is loaded using the `dotenv` package, and it's used to access the Groq API.
 
-3. **Set up Hugging Face API Key**:
+### 2. **`main.py`**
 
-   * Go to your Hugging Face Space → Settings → Secrets.
-   * Add a secret named `GROQ_API_KEY` with your **Groq API key**.
+* This is the main file responsible for setting up the **Streamlit app**.
+* **Features**:
 
-4. **Place the student portfolio CSV** in the `Cold_email_generator/resource/` directory.
+  * The app takes a URL input from the user, scrapes the page, processes it, and generates cold emails.
+  * It utilizes the **Chain** class from `chains.py` and the **Portfolio** class from `portfolio.py`.
+  * The `clean_text` function from `utils.py` is used to sanitize the scraped job description text.
+  * Once the job details are extracted and portfolio links are queried, a cold email is generated and displayed on the web page.
+* **Streamlit Interface**:
 
-5. **Run the Streamlit app**:
+  * The user inputs a job URL.
+  * The app processes the URL, scrapes the job details, and generates an email which is displayed as markdown.
 
-   ```bash
-   streamlit run src/main.py
-   ```
+### 3. **`portfolio.py`**
 
-## File Structure
+* This file contains the **Portfolio** class, which is responsible for handling a portfolio of student profiles.
+* **Main Features**:
 
-* **`src/portfolio.py`**: Defines the `Portfolio` class, which loads student portfolio data and stores it in Chroma DB for skill-based matching.
-* **`src/chains.py`**: Contains the `Chain` class for interacting with the **ChatGroq LLM**. It extracts job descriptions and generates cold emails.
-* **`src/main.py`**: The main Streamlit application that handles user input, job scraping, portfolio querying, and email generation.
-* **`src/utils.py`**: Contains the `clean_text` function that processes and cleans the raw text extracted from job postings.
-* **`Cold_email_generator/resource/student_portfolios.csv`**: A CSV file containing student portfolios, their tech stacks, and portfolio links.
+  * **`load_portfolio`**: This method loads student portfolio data from a CSV file (specified by `file_path`) and stores it in a **Chroma** vector database (`vectorstore`).
+  * The portfolio data includes a tech stack and associated links (e.g., GitHub profiles, personal websites), which are indexed by **Chroma** for fast similarity queries.
+  * **`query_links`**: This method queries the database for relevant portfolio links based on a given set of skills (extracted from the job description) and returns the top results.
+* **CSV File**: The portfolio CSV (`student portfolios.csv`) contains columns like "Techstack" (skills) and "Links" (portfolio links). The portfolio is loaded into the vector store for querying.
 
-## How It Works
+### 4. **`utils.py`**
 
-1. **User Input**: The user provides a URL for a job posting.
-2. **Job Extraction**: The app scrapes the URL for job details using LangChain's `WebBaseLoader` and processes the text.
-3. **Skill Matching**: The app queries the portfolio dataset for relevant student profiles based on required job skills.
-4. **Cold Email Generation**: The app generates a personalized cold email, referencing the relevant portfolios and skills.
+* This file contains the **`clean_text`** function, which sanitizes the scraped text from job postings by removing unwanted characters and formatting.
+* **Main Features**:
 
-## Contributing
+  * Removes HTML tags, URLs, special characters, and extra spaces.
+  * Returns a cleaned version of the job posting text that is easier to process by the model.
 
-Feel free to fork the repository, open issues, or submit pull requests. Contributions are welcome!
+### General Workflow
 
-## License
+1. **User Input**: The user provides a job posting URL through the **Streamlit** interface.
+2. **Web Scraping**: The app uses **LangChain’s `WebBaseLoader`** to scrape job posting content from the URL.
+3. **Job Extraction**: The scraped content is processed by the **Chain** class, which uses **ChatGroq** to extract relevant job details such as role, experience, skills, and description.
+4. **Portfolio Matching**: The **Portfolio** class is used to find portfolio links matching the required skills. The portfolio data is indexed and queried using **Chroma**.
+5. **Cold Email Generation**: Using the extracted job details and matching portfolio links, a cold email is generated by the **Chain** class and displayed in the **Streamlit** interface.
 
-This project is licensed under the MIT License.
+### How It Works:
+
+1. **Scraped Data Processing**: The scraped text is passed through `clean_text` to remove noise (HTML, URLs, special characters).
+2. **LLM Job Extraction**: The **Chain** class processes the cleaned text to extract job details.
+3. **Portfolio Search**: The app matches the required skills to portfolios in the Chroma database.
+4. **Email Creation**: A personalized cold email is generated based on the job description and matching portfolio links.
+
+This structure combines web scraping, language models, and portfolio search to create a cold email generator, making it useful for job recruiters or sales professionals looking to automate their outreach efforts.
