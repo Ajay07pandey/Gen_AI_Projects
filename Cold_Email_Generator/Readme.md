@@ -1,4 +1,4 @@
-# Cold Email Generator
+# Cold Email Generator [LINK](https://huggingface.co/spaces/Ajay07pandey/Cold_Email_generator)
 
 A **Cold Email Generator** app built with **Streamlit**, **LangChain**, **ChatGroq**, and **Chroma DB**. The app automatically generates personalized cold emails for job applicants based on scraped job descriptions and matching skills from a portfolio dataset.
 
